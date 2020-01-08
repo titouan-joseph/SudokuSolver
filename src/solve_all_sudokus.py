@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-from grid_correction import SudokuGrid
-from solver_correction import SudokuSolver
+from grid import SudokuGrid
+from solver import SudokuSolver
 import time
 import multiprocessing
 
 
 def solve_all(running_times):
     for l in range(1,245):
-        g = SudokuGrid.from_file("sudoku_db.txt", l)
+        g = SudokuGrid.from_file("../sudoku_db.txt", l)
         start = time.monotonic()
         solver = SudokuSolver(g)
         solver.solve()

@@ -1,4 +1,2 @@
-j = int(input('val \n'))
-
-for i in range (0,9):
-    print(j+i*9)
+v="200000060000075030048090100000300000300010009000008000001020570080730000090000004"
+print({(i, j): int(v[i + j *9])for i in range(9) for j in range(9)})

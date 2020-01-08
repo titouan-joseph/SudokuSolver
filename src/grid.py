@@ -1,4 +1,4 @@
-#-*-coding: utf8-*-
+# -*-coding: utf8-*-
 
 class SudokuGrid:
     """Cette classe représente une grille de Sudoku.
@@ -20,19 +20,11 @@ class SudokuGrid:
         :return: La grille de Sudoku correspondant à la ligne donnée dans le fichier donné
         :rtype: SudokuGrid
         """
-        f = open(filename, "r")
-        i = 0
-        lines = f.read()
-        
-        for l in lines.split("\n"):
-            if ( i < line-1):
-                i += 1
-            else:
-                return l
-                break
-
-
-        raise NotImplementedError()
+        file = open(str(filename), "r")                 #ouverture du fichier + cast du parametre filename en str pour eviter les erreurs
+        file_lines = file.readlines()                   #Lecture du fichier
+        str_gameset = file_lines[line-1].strip("\n")    #Recuperer la ligne voulu
+        file.close()                                    #Fermeture du fichier
+        return SudokuGrid(str_gameset)                  #Contruction et retour de la grille correspondante
 
     @classmethod
     def from_stdin(cls):
@@ -43,8 +35,8 @@ class SudokuGrid:
         :return: La grille de Sudoku correspondant à la ligne donnée par l'utilisateur
         :rtype: SudokuGrid
         """
-
-        raise NotImplementedError()
+        chaine = str(input())           #Recuperer la saisie de l'utilisateur
+        return cls(chaine)              #Retour de la chiane de l'utilisateur
 
     def __init__(self, initial_values_str):
         """À COMPLÉTER!
@@ -55,20 +47,15 @@ class SudokuGrid:
             où ``0`` indique une case vide
         :type initial_values_str: str
         """
-        self.sudoku_liste = []
-        if ( type(initial_values_str) is str):
-            if ( len(initial_values_str) == 81):
-                for c in initial_values_str:
-                    if ( int(c) in range(10)):
-                        self.sudoku_liste.append(int(c))                        
-                    else:
-                        raise NameError('CaracterError')
-            else:
-                raise NameError('LenghtError')
 
+        if len(initial_values_str) == 81:                                                                               #Verification que la chaine fait bien 81 caractere
+            try:                                                                                                        #Essaie de la creation du dictionnaire contenant les valeurs de la grille et les coordonnees
+                self.sudoku_dict = {(i, j): int(initial_values_str[i + 9 * j]) for i in range(9) for j in range(9)}
+            except ValueError:                                                                                          #On jete l'exception ValueError si les 81 caractere ne sont pas des chiffres
+                print("Not all characters are number")
         else:
-            raise TypeError()
-         
+            raise ValueError("String of 81 characters expected but {} was given".format(len(initial_values_str)))        #On jete l'exception ValueError si la chaine ne fait pas 81 caracteres
+
 
     def __str__(self):
         """À COMPLÉTER!
@@ -76,8 +63,20 @@ class SudokuGrid:
         :return: Une chaîne de caractère (sur plusieurs lignes...) représentant la grille
         :rtype: str
         """
-        
-        raise NotImplementedError()
+        grid = ""                                                                           #Definition de la chaine de carractere pour la grille en ASCII
+        spacer = "++---+---+---++---+---+---++---+---+---++\n"                              #Definition du separateur en ligne (\n permet de retourner a la ligne)
+        grid += spacer.replace('-', '=')                                                    #Ajout de la permiere ligne dans la chaine (et remplacement du caratere '-' par '=' pour la 1er ligne
+        row = []                                                                            #Definition de la list que l'on va utiliser pour creer les ligne
+        for i in range(9):                                                                  #Boucle pour parcourrir les 9 ligne de la grille
+            row = self.get_row(i)                                                           #On recupere les valeurs de la ligne n
+            grid += "|| {} | {} | {} || {} | {} | {} || {} | {} | {} ||\n".format(          #On ajoute la ligne dans la chaine
+                row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])     #pemret de prendre en compte les valeurs differents par ligne de la grille
+            if (i + 1) % 3 == 0:                                                            #Tous les 3 ligne on ajoute un ligne de separation plus epaise pour avoir une delimitation visuel
+                grid += spacer.replace('-', '=')
+            else:                                                                           #Sinon on ajoute notre separateur
+                grid += spacer
+
+        return str(grid)                                                                    #Retour de la chaine compossant la grille en ascii
 
     def get_row(self, i):
         """À COMPLÉTER!
@@ -88,19 +87,10 @@ class SudokuGrid:
         :return: La liste des valeurs présentes à la ligne donnée
         rtype: list of int
         """
-
-        liste = []
-
-        if( i in range(9)):
-            for ind in range (i*9, i*9+9):
-                liste.append(self.sudoku_liste[ind])
+        if i in range(9):                                                        #On verifier que la valeur saisie est bien entre 0 et 8 sinon on jete une exception
+            return [self.sudoku_dict[(i, ind)] for ind in range(9)]              #On cherche toutes les valeur de la ligne, pour cela on chercher les coordonnees (i,0-9) donc on creer un liste en meme temps que l'on parcour le dictionnaire
         else:
-            raise NameError('Also line 0 to 8')
-
-        return liste
-
-
-        raise NotImplementedError()
+            raise ValueError("Indice 0-9 attempt but {} was given".format(i))    #On jete l'exception de ValueError
 
     def get_col(self, j):
         """À COMPLÉTER!
@@ -111,19 +101,10 @@ class SudokuGrid:
         :return: La liste des valeurs présentes à la colonne donnée
         :rtype: list of int
         """
-        liste = []
-
-        if( j in range(9)):
-            for ind in range (0,9):
-                liste.append(self.sudoku_liste[j+1*9])
+        if j in range(9):
+            return [self.sudoku_dict[(ind, j)] for ind in range(9)]         #On fait la meme chose ici, sauf on cherche (0-9,j)
         else:
-            raise NameError('Also line 0 to 8')
-
-        return liste
-
-
-
-        raise NotImplementedError()
+            raise ValueError("Indice 0-9 attempt but {} was given".format(j))
 
     def get_region(self, reg_row, reg_col):
         """À COMPLÉTER!
@@ -136,7 +117,12 @@ class SudokuGrid:
         :return: La liste des valeurs présentes à la colonne donnée
         :rtype: list of int
         """
-        raise NotImplementedError()
+
+        if reg_row in range(3) and reg_col in range(3):                                                                 #On verifie que l'indice donne est bien entre 0 et 2 sinon on jete un exception
+            return [self.sudoku_dict[(i + reg_row * 3, j + reg_col * 3)] for i in range(3) for j in range(3)]           #Pour recuperer les coordonnees de la region, on multipli la valeur de l'indice de la colone par 3 pour obtenir les coordonnes de la case en haut a gauche de la region puis on ajoute 1 puis 2 pour obtenir les 8 autres case dans une double boucle
+        else:
+            raise ValueError("Indice 0-2 attempt but {} was given".format(j))
+
 
     def get_empty_pos(self):
         """À COMPLÉTER!
@@ -146,7 +132,7 @@ class SudokuGrid:
         :return: La liste des valeurs présentes à la colonne donnée
         :rtype: list of tuple of int
         """
-        raise NotImplementedError()
+        return [(i, j) for i in range(9) for j in range(9) if self.sudoku_dict[(i, j)] == 0]        #On parcour tout le dictionaire a l'aide d'une double boucle et on chercher les valeurs 0 pour les inscrire dans une liste
 
     def write(self, i, j, v):
         """À COMPLÉTER!
@@ -159,7 +145,14 @@ class SudokuGrid:
         :param j: Numéro de colonne de la case à mettre à jour, entre 0 et 8
         :param v: Valeur à écrire dans la case ``(i,j)``, entre 1 et 9
         """
-        raise NotImplementedError()
+        if i in range(9) and j in range(9) and v in range(1, 10) and self.sudoku_dict[(i, j)] == 0:     #On verifie que i et j sont entre 0 et 8 et que v est bien etre 1 et 10 sinon on jete l'exception correspondante
+            self.sudoku_dict[(i, j)] = v                                                                #Si la valeur est a 0 on peut ecrire la valeur dans le dictionnaire
+        elif i not in range(9):
+            raise ValueError("Indice 0-9 attempt but {} was given".format(i))
+        elif j not in range(9):
+            raise ValueError("Indice 0-9 attempt but {} was given".format(j))
+        elif v not in range(1, 10):
+            raise ValueError("Value 1-10 attempt but {} was given".format(j))
 
     def copy(self):
         """À COMPLÉTER!
@@ -169,14 +162,8 @@ class SudokuGrid:
         *Variante avancée: vous pouvez aussi utiliser ``self.__new__(self.__class__)``
         et manuellement initialiser les attributs de la copie.*
         """
-        raise NotImplementedError()
 
-#s = SudokuGrid().from_file("sudoku_db.txt",5)
-#print (s)
-#s2 = SudokuGrid("0a1234567"*9)
-s1 = SudokuGrid("012345678"*9)
-
-print(s1.get_row(1))
-print(s1.get_col(1)) 
-print(s1.get_col(2)) 
-print(s1.get_col(9))
+        old_grid = self.sudoku_dict                             #On copie le dictionnaire
+        new_grid = self.__new__(self.__class__)                 #On cree une nouvelle grille
+        new_grid.sudoku_dict = old_grid                         #On defini le dictionnaire de la copie
+        return new_grid                                         #Retour de la grille
